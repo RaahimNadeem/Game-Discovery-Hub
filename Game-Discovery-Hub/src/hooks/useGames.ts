@@ -24,26 +24,29 @@ interface FetchGamesResponse {
 const useGames = () => {
   const [games, setGames] = useState<Game[]>([]); // Start with an empty array
   const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
 
   // Effect hook to send the fetech requests to the back-end
   useEffect(() => {
     // handling cancellations
     const controller = new AbortController();
 
+    setLoading(true);
     apiClient
       .get<FetchGamesResponse>("/games", { signal: controller.signal })
       .then((res) => {
         setGames(res.data.results);
-        console.log(res.data.results);
+        setLoading(false);
       })
       .catch((err) => {
         if (err instanceof CanceledError) return;
         setError(err.message);
+        setLoading(false);
       });
     return () => controller.abort();
   }, []);
 
-  return { games, error };
+  return { games, error, isLoading};
 };
 
 export default useGames;
